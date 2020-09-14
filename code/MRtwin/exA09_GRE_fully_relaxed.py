@@ -114,7 +114,7 @@ for i in range(5):
     real_phantom_resized[:,:,i] = t
     
 
-    
+#real_phantom_resized[:,:,0] *= 1 # ProtonDensiti PD    
 real_phantom_resized[:,:,1] *= 1 # Tweak T1
 real_phantom_resized[:,:,2] *= 1 # Tweak T2
 real_phantom_resized[:,:,3] *= 3 # Tweak dB0

@@ -10,12 +10,16 @@ FID or 1 D imaging / spectroscopy
 """
 excercise = """
 A01.1. alter flipangle rf_event[3,0,0], find flip angle for max signal, guess the function signal(flip_angle) ~= ...
+- The flip angle proportional to the sign
 A01.2  real_phantom_resized[:,:,3] += 1000 # Tweak dB0  do this to see lab frame movement, then 0 again.
 A01.4. set flip to 90 and alter number of spins: How many spins are at least needed to get good approximation of NSpins=Inf.
+- The obscilations appear whern using 4 spins. 16 or 24 spins is reasonable
 A01.5. alter rf phase and adc rot
+-Line 173 rf_sign
 A01.6. alter event_time
-A01.7. uncomment FITTING BLOCK, fit signal, alter R2star, where does the deviation come from?
 
+A01.7. uncomment FITTING BLOCK, fit signal, alter R2star, where does the deviation come from?
+- ine 138: R2star defines teh decay time and the deviation comes from T2 decay
 """
 #%%
 #matplotlib.pyplot.close(fig=None)
@@ -48,7 +52,7 @@ do_scanner_query = False
 use_gpu = 1
 gpu_dev = 0
 
-if sys.platform != 'linux':
+if sys.platform != 'windows':
     use_gpu = 0
     gpu_dev = 0
 print(experiment_id)    
@@ -89,8 +93,8 @@ extraMeas = 1                               # number of measurmenets/ separate s
 NRep = extraMeas*sz[1]                      # number of total repetitions
 NRep = 1                                    # number of total repetitions
 szread=128
-NEvnt = szread + 5 + 2                               # number of events F/R/P
-NSpins = 52**2                               # number of spin sims in each voxel
+NEvnt = szread + 5 + 2                      # number of events F/R/P
+NSpins = 24**2                              # number of spin sims in each voxel
 NCoils = 1                                  # number of receive coil elements
 noise_std = 0*1e-3                          # additive Gaussian noise std
 kill_transverse = False                     #
@@ -166,7 +170,7 @@ scanner.set_adc_mask(adc_mask=setdevice(adc_mask))
 
 # RF events: rf_event and phases
 rf_event = torch.zeros((NEvnt,NRep,2), dtype=torch.float32)
-rf_event[3,0,0] = 90*np.pi/180  # GRE/FID specific, GRE preparation part 1 : 90 degree excitation 
+rf_event[3,0,0] = 90* np.pi/180  # GRE/FID specific, GRE preparation part 1 : 90 degree excitation 
 rf_event = setdevice(rf_event)  
 scanner.set_flip_tensor_withB1plus(rf_event)
 # rotate ADC according to excitation phase
@@ -209,21 +213,21 @@ plt.ion()
 plt.show()
 
 # do it yourself: sequence and signal plotting 
-#fig=plt.figure("""seq and signal"""); fig.set_size_inches(64, 7)
-#plt.subplot(311); plt.title('seq: RF, time, ADC')
-#plt.plot(np.tile(tonumpy(adc_mask),NRep).flatten('F'),'.',label='ADC')
-#plt.plot(tonumpy(event_time).flatten('F'),'.',label='time')
-#plt.plot(tonumpy(rf_event[:,:,0]).flatten('F'),label='RF')
-#plt.legend()
-#plt.subplot(312); plt.title('seq: gradients')
-#plt.plot(tonumpy(gradm_event[:,:,0]).flatten('F'),label='gx')
-#plt.plot(tonumpy(gradm_event[:,:,1]).flatten('F'),label='gy')
-#plt.legend()
-#plt.subplot(313); plt.title('signal')
-#plt.plot(tonumpy(scanner.signal[0,:,:,0,0]).flatten('F'),label='real')
-#plt.plot(tonumpy(scanner.signal[0,:,:,1,0]).flatten('F'),label='imag')
-#plt.legend()
-#plt.show()
+fig=plt.figure("""seq and signal"""); fig.set_size_inches(64, 7)
+plt.subplot(311); plt.title('seq: RF, time, ADC')
+plt.plot(np.tile(tonumpy(adc_mask),NRep).flatten('F'),'.',label='ADC')
+plt.plot(tonumpy(event_time).flatten('F'),'.',label='time')
+plt.plot(tonumpy(rf_event[:,:,0]).flatten('F'),label='RF')
+plt.legend()
+plt.subplot(312); plt.title('seq: gradients')
+plt.plot(tonumpy(gradm_event[:,:,0]).flatten('F'),label='gx')
+plt.plot(tonumpy(gradm_event[:,:,1]).flatten('F'),label='gy')
+plt.legend()
+plt.subplot(313); plt.title('signal')
+plt.plot(tonumpy(scanner.signal[0,:,:,0,0]).flatten('F'),label='real')
+plt.plot(tonumpy(scanner.signal[0,:,:,1,0]).flatten('F'),label='imag')
+plt.legend()
+plt.show()
 
                         
 #%%  FITTING BLOCK

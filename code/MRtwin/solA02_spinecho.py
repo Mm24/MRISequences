@@ -10,7 +10,8 @@ SE or 1 D imaging / spectroscopy
 """
 excercise = """
 A02.1. increase Nreps to 4
-A02.2. add a second flip event to create an echo. which flip angle generates the highest echo?
+A02.2. add a second flip event to create an echo. which flip angle generates the highest echo? 190
+
 A02.3. try to find a way so that the echo forms in the middle of the acquisition phase
 A02.4. try to adjust rf phase / adc rotation to get only real and positive echoes
 A02.5. uncomment FITTING BLOCK, fit signal, what is the decay rate of the envelope alter R2star
@@ -170,6 +171,7 @@ rf_event = torch.zeros((NEvnt,NRep,2), dtype=torch.float32)
 rf_event[3,0,0] = 90*np.pi/180  # GRE/FID specific, GRE preparation part 1 : 90 degree excitation 
 rf_event[3,0,1] = 90*np.pi/180  # GRE/FID specific, GRE preparation part 1 : 90 degree excitation 
 rf_event[3,1:,0] = 180*np.pi/180  # GRE/FID specific, GRE preparation part 1 : 90 degree excitation 
+#rf_event[3,2::2,1] = 0*np.pi/180  # Spoil the phase 
 rf_event = setdevice(rf_event)
 scanner.init_flip_tensor_holder()    
 scanner.set_flip_tensor_withB1plus(rf_event)
@@ -182,6 +184,8 @@ event_time = torch.from_numpy(0.08*1e-3*np.ones((NEvnt,NRep))).float()
 event_time[:,0] =  0.04*1e-3
 event_time = setdevice(event_time)
 
+TE = np.np.sum(tonumpy(event_time[:,0]))
+TR = np.np.sum(tonumpy(event_time[:,1]))
 # gradient-driver precession
 # Cartesian encoding
 gradm_event = torch.zeros((NEvnt,NRep,2), dtype=torch.float32)
