@@ -165,11 +165,12 @@ scanner.set_adc_mask(adc_mask=setdevice(adc_mask))
 
 # RF events: rf_event and phases
 rf_event = torch.zeros((NEvnt,NRep,2), dtype=torch.float32)
+# Excitation Pulses
 rf_event[3,16,0] = 0*np.pi/180  # 90deg excitation
-#rf_event[3,17,0] = 90*np.pi/180  # 90deg excitation 
-#rf_event[3,15,0] = 90*np.pi/180  # 90deg excitation 
-#rf_event[3,15:25,0] = 90*np.pi/180  # 90deg excitation 
-#rf_event[3,10:30,0] = 90*np.pi/180  # 90deg excitation 
+rf_event[3,17,0] = 90*np.pi/180  # 90deg excitation
+rf_event[3,15,0] = 90*np.pi/180  # 90deg excitation
+rf_event[3,15:25,0] = 90*np.pi/180  # 90deg excitation
+rf_event[3,10:30,0] = 90*np.pi/180  # 90deg excitation
 rf_event[3,:,0] = 90*np.pi/180  # 90deg excitation 
 rf_event = setdevice(rf_event)
 scanner.init_flip_tensor_holder()    
@@ -245,4 +246,5 @@ plt.imshow(np.abs(space).transpose(), interpolation='none',aspect = sz[0]/szread
 plt.subplot(4,6,24)
 mask=(np.abs(space)>0.2*np.max(np.abs(space))).transpose()
 plt.imshow(np.angle(space).transpose()*mask, interpolation='none',aspect = sz[0]/szread); plt.xlabel('phase_img')
-plt.show()                     
+plt.show()
+

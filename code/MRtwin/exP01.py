@@ -82,7 +82,7 @@ array =  np.arange(0,11,1) #  (start,end,step)
 print(array,'shape=',array.shape)
 
 array = np.linspace(0,1,10)  # (start, end, number of entries)
-print(array,'shape=',array.shape)
+print(array,'shape lin=',array.shape)
 
 array = np.array([np.linspace(0,1,10),np.linspace(0,1,10)])  # this could be an image matrix   
 print(array,'shape=',array.shape)
@@ -201,7 +201,7 @@ ax=plt.imshow(phaseimg(img), interpolation='none')
 fig = plt.gcf(); fig.colorbar(ax)  # add a colorbar
 
 fig.set_size_inches(10, 2)    # resize the figure propery to match your screen
-plt.show()
+#plt.show()
 
 #%% save and load variables
 import os, sys
@@ -284,34 +284,35 @@ print(D, type(D),'This is a torch tensor')
 
 print(tonumpy(D), type(tonumpy(D)),'This is again a numpy array')
 
+print('-------Exercises---------')
 
 #%% exercises:  fix the followig codes ( currently they will throw and error)
 
 #%% exercise
-array = np.zeros(5,5)  # aim : generate 5x5 matrix if zeroes
-print(array,'shape=',array.shape)
+array = np.zeros((5,5))  # aim : generate 5x5 matrix if zeroes
+print(array,'shape 1=',array.shape)
 
 #%% exercise
-array = np.linspace(0,5,1) #  aim: generate array [0,1,2,3,4,5]
-print(array,'shape=',array.shape)
+del array
+array = np.linspace(0 ,5, 6) #  aim: generate array [0,1,2,3,4,5]
+print(array,'shape 2=',array.shape)
 
 #%% exercise
-array =  np.arange(0,5,5) #  aim: generate array [0,1,2,3,4,5]
+array =  np.arange(0,6,1) #  aim: generate array [0,1,2,3,4,5]
 print(array,'shape=',array.shape)
 
-#%% exercise
-array = np.zeros([5,5,2])  
-array[:,5,1]=3.0  # aim: we want the last column of the array all filled with 3.0
-print(array,'shape=',array.shape)
-
-#%% exercise
+#%% exercise # aim: we want the last column of the array all filled with 3.0
 array = np.zeros([5,5,2])
-array[0,::2,0]=np.ones(2) # aim: fill every second column with vlue given by linspace
+array[:,-1,1]= 3.0
+print(array,'shape=',array.shape)
+
+#%% exercise  # aim: fill every second column with ones
+array =  np.zeros((5,5,2))
+array[0,::2,0] =np.ones(array.shape[1]//2+1) # np.linspace(1,3,array[0,::2,0].shape)
 
 #%% exercise, fix this code
-A=np.linspace(0,1,5)
+A= np.linspace(0,1,5)
 B= torch.arange(0,5,1)
-
-B*A
+B.cpu().numpy()*A
 
 
