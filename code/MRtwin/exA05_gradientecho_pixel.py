@@ -12,10 +12,16 @@ excercise = """
 this file starts from solA04. we want now to have the same echo in every repetition
 A05.1. have the same rf_event, event times and gradmoms for every repetition, add recover time in last action as in A03
 A05.2. what is the recover time needed to have same echo amplitudes? is there a general rule for this? 
+The rule is to have from 3 to 5 times T1. Ernst angle gives the best 
 A05.3. alter the position of the pixel in the image in line 110. what do you observe?
+- The diagonal movement leads to imaginary peak signal. 
+- The position of the pixel defines the acquisiiton frequency
+
 A05.4. set a second pixel (activate line 111). What do you observe?
+- A second pixel 
 A05.5. try [8,:,:] and [:,8,:] in line 110. what do you observe?
 A05.6. instead of x gradient use a y gradient moment gradmom[:,:,1]
+with x encoder y position is not alter and viceversa
 """
 #%%
 #matplotlib.pyplot.close(fig=None)
@@ -105,9 +111,10 @@ cutoff = 1e-12
 #real_phantom = scipy.io.loadmat('../../data/numerical_brain_cropped.mat')['cropped_brain']
 
 real_phantom_resized = np.zeros((sz[0],sz[1],5), dtype=np.float32)
-real_phantom_resized[10,6,:]=np.array([1, 1, 0.1, 0,1])
-#real_phantom_resized[9,9,:]=np.array([0.25, 1, 0.1, 0,1])
-    
+real_phantom_resized[8,10,:]=np.array([1, 1, 0.1, 0,1])
+# Set another pixel
+real_phantom_resized[9,9,:]=np.array([0.25, 1, 0.1, 0,1])
+#
 real_phantom_resized[:,:,1] *= 1 # Tweak T1
 real_phantom_resized[:,:,2] *= 1 # Tweak T2
 real_phantom_resized[:,:,3] += 0 # Tweak dB0
@@ -158,7 +165,9 @@ scanner.set_adc_mask(adc_mask=setdevice(adc_mask))
 
 # RF events: rf_event and phases
 rf_event = torch.zeros((NEvnt,NRep,2), dtype=torch.float32)
-rf_event[3,0,0] = 90*np.pi/180  # 90deg excitation in first rep
+#rf_event[3,repetition,0]
+rf_event[3,:,0] = 90*np.pi/180  # 90deg excitation in first rep
+
 rf_event = setdevice(rf_event)
 scanner.init_flip_tensor_holder()    
 scanner.set_flip_tensor_withB1plus(rf_event)
@@ -169,15 +178,22 @@ scanner.set_ADC_rot_tensor(-rf_event[3,0,1] + np.pi/2 + np.pi*rfsign) #GRE/FID s
 # event timing vector 
 event_time = torch.from_numpy(0.08*1e-3*np.ones((NEvnt,NRep))).float()
 event_time[:,0] =  0.08*1e-3
+Trec = 5 # Last event recovery time = 1
+event_time[-1,:] = Trec # Aditional time not to lose signal
 event_time = setdevice(event_time)
 
 # gradient-driver precession
-# Cartesian encoding
+# Cartesian encoding Gradient [n_event, repetion, xyz]
 gradm_event = torch.zeros((NEvnt,NRep,2), dtype=torch.float32)
-gradm_event[4,0,0] = -0.5*szread
-gradm_event[5:-2,0,0] = 1
-gradm_event[5:-2,1::2,0] = -1 
-gradm_event[5:-2,2::2,0] =  1
+# X gradients
+gradm_event[4,:,0] = -szread/2 	# each rep has now a rewinder event
+gradm_event[5:-2,:,0] = 1			# each rep has the same readout gradient
+
+# Y gradients
+gradm_event[4,:,1] = -szread/2 	# each rep has now a rewinder event
+gradm_event[5:-2,:,1] = 1			# each rep has the same readout gradient
+
+
 gradm_event = setdevice(gradm_event)
 
 scanner.init_gradient_tensor_holder()
@@ -194,7 +210,25 @@ scanner.forward(spins, event_time)
 # sequence and signal plotting
 targetSeq = core.target_seq_holder.TargetSequenceHolder(rf_event,event_time,gradm_event,scanner,spins,scanner.signal)
 #targetSeq.print_seq_pic(True,plotsize=[12,9])
-#targetSeq.print_seq(plotsize=[12,9])
-targetSeq.print_seq(plotsize=[12,9], time_axis=1)
-                        
-            
+#plot in terms of time
+targetSeq.print_seq(plotsize=[12,9], time_axis=0)
+
+fig = plt.figure("""seq and signal""");
+fig.set_size_inches(64, 7)
+plt.subplot(311);
+plt.title('seq: RF, time, ADC')
+plt.plot(np.tile(tonumpy(adc_mask), NRep).flatten('F'), '.', label='ADC')
+plt.plot(tonumpy(event_time).flatten('F'), '.', label='time')
+plt.plot(tonumpy(rf_event[:, :, 0]).flatten('F'), label='RF')
+plt.legend()
+plt.subplot(312);
+plt.title('seq: gradients')
+plt.plot(tonumpy(gradm_event[:, :, 0]).flatten('F'), label='gx')
+plt.plot(tonumpy(gradm_event[:, :, 1]).flatten('F'), label='gy')
+plt.legend()
+plt.subplot(313);
+plt.title('signal')
+plt.plot(tonumpy(scanner.signal[0, :, :, 0, 0]).flatten('F'), label='real')
+plt.plot(tonumpy(scanner.signal[0, :, :, 1, 0]).flatten('F'), label='imag')
+plt.legend()
+plt.show()

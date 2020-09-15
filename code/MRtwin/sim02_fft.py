@@ -1,5 +1,6 @@
 from scipy import signal
-
+import numpy as np
+import matplotlib.pyplot as plt
 samplepoints=112
 func=np.zeros((samplepoints,))
 func[40:70]=1

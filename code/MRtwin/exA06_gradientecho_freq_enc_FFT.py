@@ -182,10 +182,11 @@ event_time = setdevice(event_time)
 # gradient-driver precession
 # Cartesian encoding
 gradm_event = torch.zeros((NEvnt,NRep,2), dtype=torch.float32)
+gradm_event[4,:,0] = -0.5*szread
+gradm_event[5:-2,:,0] = 1
+
 gradm_event[4,:,1] = -0.5*szread
-gradm_event[5:-2,:,1] = 1
-#gradm_event[4,:,0] = -0.5*szread *0.7
-#gradm_event[5:-2,:,0] = 1 *0.7
+gradm_event[5:-2,:,1] = 1  # Redaout gradient
 gradm_event = setdevice(gradm_event)
 
 scanner.init_gradient_tensor_holder()
@@ -211,17 +212,42 @@ targetSeq.print_seq(plotsize=[12,9], time_axis=1)
 ## S5: MR reconstruction of signal ::: #####################################
 fig=plt.figure("""Fourier Transform""")
 plt.subplot(311); plt.title('ADC signal')
+# FFT only works in imaginary
 spectrum = tonumpy(scanner.signal[0,adc_mask.flatten()!=0,:,:2,0].clone()) 
 spectrum = spectrum[:,:,0]+spectrum[:,:,1]*1j # get all ADC signals as complex numpy array
 plt.plot(np.real(spectrum).flatten('F'),label='real')
 plt.plot(np.imag(spectrum).flatten('F'),label='imag')
+
 major_ticks = np.arange(0, szread*NRep, szread) # this adds ticks at the correct position szread
 ax=plt.gca(); ax.set_xticks(major_ticks); ax.grid()
 
+
 space = np.zeros_like(spectrum)
+
+spectrum = np.roll(spectrum,szread//2,axis=0)
+spectrum = np.roll(spectrum,NRep//2,axis=1)
+
+space = np.fft.ifft(spectrum, axis=0)
+
+# for i in range(0,NRep):
+#     space[:,i] = np.fft.ifft(spectrum[:,i])
+
+# fftshift We need to shift the data half of the data points
+space= np.roll(space,szread//2-1,axis=0)
+space = np.roll(space,NRep//2-1,axis=1)
+
+plt.subplot(312)
+plt.plot(np.abs(space.flatten('F')))
+plt.plot(np.imag(space.flatten('F')))
+ax=plt.gca(); ax.set_xticks(major_ticks); ax.grid()
 
 plt.subplot(312); plt.title('FFT')
 plt.plot(np.abs(space.flatten('F')))
 plt.plot(np.imag(space.flatten('F')))
 ax=plt.gca(); ax.set_xticks(major_ticks); ax.grid()
            
+plt.subplot(313); plt.title('phantom projection')
+t = cv2.resize(real_phantom_resized[:,:,0], dsize=(sz[0], szread), interpolation=cv2.INTER_NEAREST)
+t=np.flipud(np.roll(t,-szread//sz[1]//2+1,0))  # this is needed due to the oversampling of the phantom, szread>sz
+plt.plot(np.sum(t,axis=1).flatten('F'),label='proj1')
+plt.show()

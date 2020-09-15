@@ -238,7 +238,7 @@ for i in range(0,NRep):
 space= np.roll(space,szread//2-1,axis=0)
 space = np.roll(space,NRep//2-1,axis=1)
 plt.subplot(312)
-plt.plot(np.abs(space.flatten('F')))
+plt.plot(np.abs(space.flatten('F'))); plt.title('FFT')
 plt.plot(np.imag(space.flatten('F')))
 ax=plt.gca(); ax.set_xticks(major_ticks); ax.grid()
 

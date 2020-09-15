@@ -121,8 +121,9 @@ real_phantom_resized[2,3,:]=np.array([0.5,    1, 0.1, 0,0])
 
 # load phantom from file
 cutoff = 1e-12
+real_phantom = real_phantom_resized
 #real_phantom = scipy.io.loadmat('../../data/phantom2D.mat')['phantom_2D']
-real_phantom = scipy.io.loadmat('../../data/numerical_brain_cropped.mat')['cropped_brain']
+#real_phantom = scipy.io.loadmat('../../data/numerical_brain_cropped.mat')['cropped_brain']
 
 real_phantom_resized = np.zeros((sz[0],sz[1],5), dtype=np.float32)
 for i in range(5):

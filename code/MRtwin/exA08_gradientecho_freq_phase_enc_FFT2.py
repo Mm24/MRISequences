@@ -99,7 +99,7 @@ def setdevice(x):
 ## S0: define image and simulation settings::: #####################################
 sz = np.array([12,12])                      # image size
 extraMeas = 1                               # number of measurmenets/ separate scans
-NRep = extraMeas*sz[1]                      # number of total repetitions
+NRep = 12 #extraMeas*sz[1]                      # number of total repetitions
 NRep = 1                                 # number of total repetitions
 szread=128
 NEvnt = szread + 5 + 2                               # number of events F/R/P
@@ -230,11 +230,24 @@ ax=plt.gca(); ax.set_xticks(major_ticks); ax.grid()
 
 space = np.zeros_like(spectrum)
 
-spectrum = np.roll(spectrum,szread//2,axis=0)
-spectrum = np.roll(spectrum,NRep//2,axis=1)
+spectrum = np.roll(spectrum, szread // 2, axis=0)
+spectrum = np.roll(spectrum, NRep // 2, axis=1)
 
-for i in range(0,NRep):
-    space[:,i] = np.fft.ifft(spectrum[:,i])
+for i in range(0, NRep):
+    space[:, i] = np.fft.ifft(spectrum[:, i])
+
+for i in range(0, szread):
+    space[i, :] = np.fft.ifft(space[i, :])
+# fftshift
+space = np.roll(space, szread // 2 - 1, axis=0)
+space = np.roll(space, NRep // 2 - 1, axis=1)
+
+plt.subplot(312)
+plt.plot(np.abs(space.flatten('F')))
+plt.plot(np.imag(space.flatten('F')))
+ax = plt.gca();
+ax.set_xticks(major_ticks);
+ax.grid()
 
 # fftshift
 space= np.roll(space,szread//2-1,axis=0)
