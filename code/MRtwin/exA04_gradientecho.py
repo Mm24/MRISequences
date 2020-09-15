@@ -181,6 +181,26 @@ event_time = setdevice(event_time)
 # gradient-driver precession
 # Cartesian encoding
 gradm_event = torch.zeros((NEvnt,NRep,2), dtype=torch.float32)
+
+# Get and echo in first repetition appart from FID before the first gradient (in extra events 0:4)
+# gradm_event[event_number, repetition,0] = -0.5*szreadç
+# First the Gradient echo rebinder on the left of the k space
+gradm_event[4,0,0] = -szread/2
+
+gradm_event[5:-2,0,0] = 0.5
+#The first gradient
+gradm_event[0:10,0,0] = 1
+# Task 3 Rephase the gradient to be the shame so the total gradient moment is zero again
+gradm_event[50:60,0,0] = -1
+
+
+# recover the signal without using an additional gradient moment
+# One echo per repetition
+# Add a spatial gradient moment in each readout step of the first repetition
+gradm_event[5:-2,0,0] = 0.5
+gradm_event[5:-2,1::2,0] = -1
+gradm_event[5:-2,2::2,0] =  1
+
 gradm_event = setdevice(gradm_event)
 
 scanner.init_gradient_tensor_holder()
@@ -196,8 +216,8 @@ scanner.forward(spins, event_time)
 # sequence and signal plotting
 targetSeq = core.target_seq_holder.TargetSequenceHolder(rf_event,event_time,gradm_event,scanner,spins,scanner.signal)
 #targetSeq.print_seq_pic(True,plotsize=[12,9])
-targetSeq.print_seq(plotsize=[12,9])
-#targetSeq.print_seq(plotsize=[12,9], time_axis=1)
+#targetSeq.print_seq(plotsize=[12,9])
+targetSeq.print_seq(plotsize=[12,9], time_axis=1)
                         
 #%% FITTING BLOCK
 #tfull=np.cumsum(tonumpy(event_time).transpose().ravel())

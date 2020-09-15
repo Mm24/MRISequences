@@ -9,9 +9,9 @@ experiment_description = """
 FID or 1 D imaging / spectroscopy
 """
 excercise = """
-A03.1. increase Nreps to 8
-A03.2. add a T1 recovery time (Trec) of 1 s at the end of the readout phase (in last action), alter Trec
-A03.3. add flip event to create fresh FID signals for each acquisition 
+A03.1. increase Nreps to 8: (line 88)
+A03.2. add a T1 recovery time (Trec) of 1 s at the end of the readout phase (in last action), alter Trec (Line 179)
+A03.3. add flip event to create fresh FID signals for each acquisition (rf_vent)
 A03.4. cover a full range of different Trec in one measurement from 0.1 to 3 s
 A03.5. uncomment FITTING BLOCK, fit signal, what is the recovery rate of the envelope, alter T1
 """
@@ -82,13 +82,13 @@ def setdevice(x):
 
 #############################################################################
 ## S0: define image and simulation settings::: #####################################
-sz = np.array([4,4])                      # image size
+sz = np.array([12,12])                      # image size
 extraMeas = 1                               # number of measurmenets/ separate scans
 NRep = extraMeas*sz[1]                      # number of total repetitions
-NRep = 8                                  # number of total repetitions
-szread=128
-NEvnt = szread + 5 + 2                               # number of events F/R/P
-NSpins = 26**2                               # number of spin sims in each voxel
+NRep = 8                                   # number of total repetitions
+szread= 128
+NEvnt = szread + 5 + 2                      # number of events F/R/P
+NSpins = 26**2                              # number of spin sims in each voxel
 NCoils = 1                                  # number of receive coil elements
 noise_std = 0*1e-3                          # additive Gaussian noise std
 kill_transverse = False                     #
@@ -164,7 +164,8 @@ scanner.set_adc_mask(adc_mask=setdevice(adc_mask))
 
 # RF events: rf_event and phases
 rf_event = torch.zeros((NEvnt,NRep,2), dtype=torch.float32)
-rf_event[3,:,0] = 90*np.pi/180  # GRE/FID specific, GRE preparation part 1 : 90 degree excitation 
+rf_event[3,:,0] = 90*np.pi/180  # GRE/FID specific, GRE preparation part 1 : 90 degree excitation
+
 rf_event = setdevice(rf_event)
 scanner.init_flip_tensor_holder()    
 scanner.set_flip_tensor_withB1plus(rf_event)
@@ -175,8 +176,8 @@ scanner.set_ADC_rot_tensor(-rf_event[3,:,1] + np.pi/2 + np.pi*rfsign) #GRE/FID s
 
 # event timing vector 
 event_time = torch.from_numpy(0.08*1e-3*np.ones((NEvnt,NRep))).float()
-Trec= np.linspace(0.1,3,8)
-event_time[-1,:] =  torch.from_numpy(Trec)
+Trec = torch.linspace(0.1,3, NRep)
+event_time[-1,:] = Trec # Last event recovery time = 1
 event_time = setdevice(event_time)
 
 # gradient-driver precession
@@ -196,9 +197,9 @@ scanner.forward(spins, event_time)
   
 # sequence and signal plotting
 targetSeq = core.target_seq_holder.TargetSequenceHolder(rf_event,event_time,gradm_event,scanner,spins,scanner.signal)
-#targetSeq.print_seq_pic(True,plotsize=[12,9])
+targetSeq.print_seq_pic(True,plotsize=[12,9])
 #targetSeq.print_seq(plotsize=[12,9])
-targetSeq.print_seq(plotsize=[12,9], time_axis=1)
+#targetSeq.print_seq(plotsize=[12,9], time_axis=1)
                         
 #%% FITTING BLOCK
 tfull=np.cumsum(tonumpy(event_time).transpose().ravel())
@@ -230,4 +231,3 @@ plt.ion()
 
 fig.set_size_inches(64, 7)
 plt.show()
-            

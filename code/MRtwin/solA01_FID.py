@@ -92,7 +92,7 @@ sz = np.array([4,4])                      # image size
 extraMeas = 1                               # number of measurmenets/ separate scans
 NRep = extraMeas*sz[1]                      # number of total repetitions
 NRep = 1                                    # number of total repetitions
-szread=128
+szread=16                                  # number of events Simulation samples parameters
 NEvnt = szread + 5 + 2                      # number of events F/R/P
 NSpins = 24**2                              # number of spin sims in each voxel
 NCoils = 1                                  # number of receive coil elements
@@ -136,7 +136,7 @@ for i in range(5):
     fig = plt.gcf()
     fig.colorbar(ax) 
 fig.set_size_inches(18, 3)
-plt.show()
+
    
 #begin nspins with R2* = 1/T2*
 R2star = 250.0
@@ -210,7 +210,7 @@ plt.title('signal')
 plt.legend()
 plt.ion()
 
-plt.show()
+
 
 # do it yourself: sequence and signal plotting 
 fig=plt.figure("""seq and signal"""); fig.set_size_inches(64, 7)
@@ -227,9 +227,7 @@ plt.subplot(313); plt.title('signal')
 plt.plot(tonumpy(scanner.signal[0,:,:,0,0]).flatten('F'),label='real')
 plt.plot(tonumpy(scanner.signal[0,:,:,1,0]).flatten('F'),label='imag')
 plt.legend()
-plt.show()
 
-                        
 #%%  FITTING BLOCK
 t=np.cumsum(tonumpy(event_time).transpose().ravel())
 y=tonumpy(scanner.signal[0,:,:,0,0]).transpose().ravel()
@@ -238,6 +236,7 @@ def fit_func(t, a, R,c):
     return a*np.exp(-R*t) + c   
 
 p=scipy.optimize.curve_fit(fit_func,t,y,p0=(np.mean(y), 1,np.min(y)))
+
 print(p[0][1])
 
 fig=plt.figure("""fit""")
@@ -248,6 +247,9 @@ plt.title('fit')
 plt.legend()
 plt.ion()
 #
-#fig.set_size_inches(64, 7)
-#plt.show()
+fig.set_size_inches(64, 7)
+plt.show()
+
+print("Simulation FID finish")
+
             

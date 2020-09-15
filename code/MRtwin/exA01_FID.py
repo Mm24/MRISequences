@@ -11,7 +11,7 @@ FID or 1 D imaging / spectroscopy
 excercise = """
 A01.1. alter flipangle rf_event[3,0,0], find flip angle for max signal, guess the function signal(flip_angle) ~= ...
 A01.2  real_phantom_resized[:,:,3] += 1000 # Tweak dB0  do this to see lab frame movement, then 0 again.
-A01.4. set flip to 90 and alter number of spins: How many spins are at least needed to get good approximation of NSpins=Inf.
+A01.4. set flip to 90 and alter number of spins: How many spins are at least needed to get good approximation of NSpins=Inf. (24)
 A01.5. alter rf phase and adc rot
 A01.6. alter event_time
 A01.7. uncomment FITTING BLOCK, fit signal, alter R2star, where does the deviation come from?

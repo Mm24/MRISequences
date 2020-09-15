@@ -88,10 +88,10 @@ def setdevice(x):
 sz = np.array([4,4])                      # image size
 extraMeas = 1                               # number of measurmenets/ separate scans
 NRep = extraMeas*sz[1]                      # number of total repetitions
-NRep = 4                                  # number of total repetitions
-szread=128
-NEvnt = szread + 5 + 2                               # number of events F/R/P
-NSpins = 26**2                               # number of spin sims in each voxel
+NRep = 4                                    # number of total repetitions
+szread=12
+NEvnt = szread + 5 + 2                      # number of events F/R/P
+NSpins = 26**2                              # number of spin sims in each voxel
 NCoils = 1                                  # number of receive coil elements
 noise_std = 0*1e-3                          # additive Gaussian noise std
 kill_transverse = False                     #
@@ -169,6 +169,9 @@ scanner.set_adc_mask(adc_mask=setdevice(adc_mask))
 # RF events: rf_event and phases
 rf_event = torch.zeros((NEvnt,NRep,2), dtype=torch.float32)
 rf_event[3,0,0] = 90*np.pi/180  # GRE/FID specific, GRE preparation part 1 : 90 degree excitation 
+rf_event[3,0,1] = 90*np.pi/180  # GRE/FID specific, GRE preparation part 2 : 90 degree excitation
+rf_event[3,1:,0] = 180*np.pi/180  # GRE/FID specific, GRE preparation part 1 : 90 degree excitation
+
 rf_event = setdevice(rf_event)
 scanner.init_flip_tensor_holder()    
 scanner.set_flip_tensor_withB1plus(rf_event)
@@ -200,7 +203,7 @@ scanner.forward(spins, event_time)
 targetSeq = core.target_seq_holder.TargetSequenceHolder(rf_event,event_time,gradm_event,scanner,spins,scanner.signal)
 #targetSeq.print_seq_pic(True,plotsize=[12,9])
 targetSeq.print_seq(plotsize=[12,9], time_axis=1)     
-      
+
 fig=plt.figure("""signals""")
 ax1=plt.subplot(131)
 ax=plt.plot(tonumpy(scanner.signal[0,:,:,0,0]).transpose().ravel(),label='real')
@@ -210,8 +213,7 @@ plt.legend()
 plt.ion()
 
 
-plt.show()
-                        
+
 #%%  FITTING BLOCK
 tfull=np.cumsum(tonumpy(event_time).transpose().ravel())
 yfull=tonumpy(scanner.signal[0,:,:,0,0]).transpose().ravel()

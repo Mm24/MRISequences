@@ -174,7 +174,10 @@ scanner.set_ADC_rot_tensor(-rf_event[3,:,1] + np.pi/2 + np.pi*rfsign) #GRE/FID s
 
 # event timing vector 
 event_time = torch.from_numpy(0.08*1e-3*np.ones((NEvnt,NRep))).float()
-event_time[:,0] =  0.08*1e-3
+Trec = torch.linspace(0.1,3, NRep)
+#event_time[:,0] =  0.08*1e-3
+Trec = torch.linspace(0.1,3, NRep)
+event_time[-1,:] = Trec # Last event recovery time = 1
 event_time = setdevice(event_time)
 
 # gradient-driver precession
@@ -199,29 +202,29 @@ targetSeq.print_seq(plotsize=[12,9])
 #targetSeq.print_seq(plotsize=[12,9], time_axis=1)
                         
 #%% FITTING BLOCK
-#tfull=np.cumsum(tonumpy(event_time).transpose().ravel())
-#yfull=tonumpy(scanner.signal[0,:,:,0,0]).transpose().ravel()
-#idx=tonumpy(scanner.signal[0,:,:,0,0]).transpose().argmax(1)
-#idx=idx + np.linspace(0,(NRep-1)*len(event_time[:,0]),NRep,dtype=np.int64)
-#t=tfull[idx]
-#y=yfull[idx]
-#t=t[2:]
-#y=y[2:]
-#def fit_func(t, a, R,c):
-#    return a*np.exp(-R*t) + c   
+# tfull=np.cumsum(tonumpy(event_time).transpose().ravel())
+# yfull=tonumpy(scanner.signal[0,:,:,0,0]).transpose().ravel()
+# idx=tonumpy(scanner.signal[0,:,:,0,0]).transpose().argmax(1)
+# idx=idx + np.linspace(0,(NRep-1)*len(event_time[:,0]),NRep,dtype=np.int64)
+# t=tfull[idx]
+# y=yfull[idx]
+# t=t[2:]
+# y=y[2:]
+# def fit_func(t, a, R,c):
+#    return a*np.exp(-R*t) + c
 #
-#p=scipy.optimize.curve_fit(fit_func,t,y,p0=(np.mean(y), 1,np.min(y)))
-#print(p[0][1])
+# p=scipy.optimize.curve_fit(fit_func,t,y,p0=(np.mean(y), 1,np.min(y)))
+# print(p[0][1])
 #
-#fig=plt.figure("""fit""")
-#ax1=plt.subplot(131)
-#ax=plt.plot(tfull,yfull,label='fulldata')
-#ax=plt.plot(t,y,label='data')
-#plt.plot(t,fit_func(t,p[0][0],p[0][1],p[0][2]),label="f={:.2}*exp(-{:.2}*t)+{:.2}".format(p[0][0], p[0][1],p[0][2]))
-#plt.title('fit')
-#plt.legend()
-#plt.ion()
+# fig=plt.figure("""fit""")
+# ax1=plt.subplot(131)
+# ax=plt.plot(tfull,yfull,label='fulldata')
+# ax=plt.plot(t,y,label='data')
+# plt.plot(t,fit_func(t,p[0][0],p[0][1],p[0][2]),label="f={:.2}*exp(-{:.2}*t)+{:.2}".format(p[0][0], p[0][1],p[0][2]))
+# plt.title('fit')
+# plt.legend()
+# plt.ion()
 #
-#fig.set_size_inches(64, 7)
-#plt.show()
+# fig.set_size_inches(64, 7)
+# plt.show()
             
